@@ -315,3 +315,9 @@ Stargazers over time
 
 .. image:: https://starchart.cc/tzutalin/labelImg.svg
 
+**Changes from the original version:**
+
+- Added "Copy Boxes" command (`Ctrl+C`) and "Paste Boxes" command (`Ctrl+V`) in the "Edit" tab.
+- The "Copy previous bounding boxes moved" command remains available via the `Ctrl+I` shortcut.
+
+Motivation for these changes: The "copy previous bounding boxes moved" feature is still useful, but it’s not convenient in all situations. For example, you cannot copy boxes at the start of a program session, copy the base box setup, or use it with an image other than the last one edited.
