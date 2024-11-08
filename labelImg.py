@@ -100,6 +100,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.cur_img_idx = 0
         self.img_count = len(self.m_img_list)
 
+        self.clipboard = []
+
         # Whether we need to save or not.
         self.dirty = False
 
@@ -228,7 +230,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         open_annotation = action(get_str('openAnnotation'), self.open_annotation_dialog,
                                  'Ctrl+Shift+O', 'open', get_str('openAnnotationDetail'))
-        copy_prev_bounding = action(get_str('copyPrevBounding'), self.copy_previous_bounding_boxes, 'Ctrl+v', 'copy', get_str('copyPrevBounding'))
+        copy_prev_bounding = action(get_str('copyPrevBounding'), self.copy_previous_bounding_boxes, 'Ctrl+I', 'copy', get_str('copyPrevBounding'))
 
         open_next_image = action(get_str('nextImg'), self.open_next_image,
                                  'd', 'next', get_str('nextImgDetail'))
@@ -281,6 +283,11 @@ class MainWindow(QMainWindow, WindowMixin):
                         'Delete', 'delete', get_str('delBoxDetail'), enabled=False)
         duplicate = action(get_str('dupBox'), self.duplicate_selected_shape,
                            'Ctrl+D', 'duplicate', get_str('dupBoxDetail'), enabled=False)
+
+        copy = action(get_str('cpBox'), self.copy_shapes,
+                           'Ctrl+C', 'copy', get_str('cpBoxDetail'), enabled=True)
+        paste = action(get_str('psBox'), self.paste_shapes,
+                           'Ctrl+V', 'paste', get_str('psBoxDetail'), enabled=True)
 
         advanced_mode = action(get_str('advancedMode'), self.toggle_advanced_mode,
                                'Ctrl+Shift+A', 'expert', get_str('advancedModeDetail'),
@@ -380,7 +387,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Store actions for further handling.
         self.actions = Struct(save=save, save_format=save_format, saveAs=save_as, open=open, close=close, resetAll=reset_all, deleteImg=delete_image,
-                              lineColor=color1, create=create, delete=delete, edit=edit, duplicate=duplicate,
+                              lineColor=color1, create=create, delete=delete, edit=edit, duplicate=duplicate, copy=copy, paste=paste,
                               createMode=create_mode, editMode=edit_mode, advancedMode=advanced_mode,
                               shapeLineColor=shape_line_color, shapeFillColor=shape_fill_color,
                               zoom=zoom, zoomIn=zoom_in, zoomOut=zoom_out, zoomOrg=zoom_org,
@@ -391,10 +398,10 @@ class MainWindow(QMainWindow, WindowMixin):
                               fileMenuActions=(
                                   open, open_dir, save, save_as, close, reset_all, quit),
                               beginner=(), advanced=(),
-                              editMenu=(edit, duplicate, delete,
+                              editMenu=(edit, copy, paste, duplicate, delete,
                                         None, color1, self.draw_squares_option),
-                              beginnerContext=(create, edit, duplicate, delete),
-                              advancedContext=(create_mode, edit_mode, edit, duplicate,
+                              beginnerContext=(create, edit, copy, paste, duplicate, delete),
+                              advancedContext=(create_mode, edit_mode, edit, copy, paste, duplicate,
                                                delete, shape_line_color, shape_fill_color),
                               onLoadActive=(
                                   close, create, create_mode, edit_mode),
@@ -448,7 +455,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, open_dir, change_save_dir, open_next_image, open_prev_image, verify, save, save_format, None, create, duplicate, delete, None,
+            open, open_dir, change_save_dir, open_next_image, open_prev_image, verify, save, save_format, None, create, copy, paste, duplicate, delete, None,
             zoom_in, zoom, zoom_out, fit_window, fit_width, None,
             light_brighten, light, light_darken, light_org)
 
@@ -920,6 +927,17 @@ class MainWindow(QMainWindow, WindowMixin):
         self.add_label(self.canvas.copy_selected_shape())
         # fix copy and delete
         self.shape_selection_changed(True)
+
+    def copy_shapes(self):
+        self.clipboard = [shape.duplicate() for shape in self.canvas.shapes if shape.is_closed()]
+
+    def paste_shapes(self):
+        copied = [shape.duplicate() for shape in self.clipboard]
+        for shape in copied:
+            self.add_label(shape)
+            self.canvas.shapes.append(shape)
+        self.update_combo_box()
+        self.canvas.repaint()
 
     def combo_selection_changed(self, index):
         text = self.combo_box.cb.itemText(index)

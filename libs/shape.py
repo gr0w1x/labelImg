@@ -64,6 +64,9 @@ class Shape(object):
     def close(self):
         self._closed = True
 
+    def is_closed(self):
+        return self._closed
+
     def reach_max_points(self):
         if len(self.points) >= 4:
             return True
@@ -196,6 +199,19 @@ class Shape(object):
             shape.line_color = self.line_color
         if self.fill_color != Shape.fill_color:
             shape.fill_color = self.fill_color
+        shape.difficult = self.difficult
+        return shape
+
+    def duplicate(self):
+        shape = Shape("%s" % self.label)
+        shape.points = [QPointF(p.x(), p.y()) for p in self.points]
+        shape.fill = self.fill
+        shape.selected = self.selected
+        shape._closed = self._closed
+        if self.line_color != Shape.line_color:
+            shape.line_color = QColor(self.line_color)
+        if self.fill_color != Shape.fill_color:
+            shape.fill_color = QColor(self.fill_color)
         shape.difficult = self.difficult
         return shape
 
