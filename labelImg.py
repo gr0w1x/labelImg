@@ -926,6 +926,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def duplicate_selected_shape(self):
         self.add_label(self.canvas.copy_selected_shape())
         # fix copy and delete
+        self.set_dirty()
         self.shape_selection_changed(True)
 
     def copy_shapes(self):
@@ -936,6 +937,7 @@ class MainWindow(QMainWindow, WindowMixin):
         for shape in copied:
             self.add_label(shape)
             self.canvas.shapes.append(shape)
+        self.set_dirty()
         self.update_combo_box()
         self.canvas.repaint()
 
